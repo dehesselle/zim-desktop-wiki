@@ -2,50 +2,9 @@ on:
   # Trigger the workflow on push or pull request, but only for the develop branch
   push:
     branches:
-      - develop
-  pull_request:
-    branches:
-      - develop
+      - '*'
 
 jobs:
-  test_linux:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.6", "3.10"]
-
-    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Setup python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
-
-      - name: Install Ubuntu system dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -qq -y gir1.2-gtk-3.0 gobject-introspection libgirepository1.0-dev xvfb
-        if: matrix.os == 'ubuntu-latest'
-
-      - name: Install Python dependencies
-        run: |
-          pip install PyGObject
-          pip install pyxdg
-
-      - name: Configure git
-        run: |
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
-
-      - name: Test ${{ matrix.os }}
-        run: xvfb-run ./test.py
-
-
   test_macos:
     runs-on: macos-11
     env:
@@ -88,30 +47,3 @@ jobs:
           VER_DIR: ${{ steps.dependencies.outputs.VER_DIR }}
           SYS_IGNORE_USR_LOCAL: true
 
-
-  test_windows:
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-    
-    name: MSYS2 Python 3.x on windows-latest
-    steps:
-      - uses: actions/checkout@v2
-    
-      - name: Install MSYS2
-        uses: msys2/setup-msys2@v2
-
-      - name: Install system dependencies
-        shell: msys2 {0}
-        run: |
-          pacman -S --noconfirm git mingw-w64-x86_64-gtk3 mingw-w64-x86_64-python3 mingw-w64-x86_64-python3-gobject mingw-w64-x86_64-python-xdg
-
-      - name: Configure git
-        shell: msys2 {0}
-        run: |
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
-
-      - name: Test Windows
-        shell: msys2 {0}
-        run: python ./test.py
